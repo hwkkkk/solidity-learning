@@ -28,11 +28,11 @@ describe("mytoken deploy", () => {
   });
 
   it("should return 0 totalSupply", async () => {
-    expect(await MyTokenC.totalSupply()).equal(0);
+    expect(await MyTokenC.totalSupply()).equal(1n * 10n ** 18n);
   });
-
-  it("shuld return 0 balance for signer 0", async () => {
+  //1MT = 10**18
+  it("shuld return 1MT balance for signer 0", async () => {
     const signer0 = signers[0];
-    expect(await MyTokenC.balanceOf(signers[0].address)).equal(0);
+    expect(await MyTokenC.balanceOf(signers[0].address)).equal(1n * 10n ** 18n);
   });
 });
