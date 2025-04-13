@@ -79,4 +79,52 @@ describe("mytoken deploy", () => {
       ).to.be.revertedWith("insufficient balance");
     });
   });
+
+  describe("TransferForm", () => {
+    it("should emit Approval event", async () => {
+      const signer1 = signers[1];
+      await expect(
+        MyTokenC.approve(signer1.address, hre.ethers.parseUnits("10", decimals))
+      )
+        .to.emit(MyTokenC, "Approval")
+        .withArgs(signer1.address, hre.ethers.parseUnits("10", decimals));
+    });
+    it("should be reverted with insufficient allowance error", async () => {
+      const signer0 = signers[0];
+      const signer1 = signers[1];
+      await expect(
+        MyTokenC.connect(signer1).transferFrom(
+          signer0.address,
+          signer1.address,
+          hre.ethers.parseUnits("1", decimals)
+        )
+      ).to.be.reverted("insufficient allowance");
+    });
+  });
+
+  describe("approve and transform", () => {
+    it("should 0.3mt token from s0 to s1", async () => {
+      const signer0 = signers[0];
+      const signer1 = signers[1];
+      await expect(
+        MyTokenC.approve(signer1.address, hre.ethers.parseUnits("10", decimals))
+      )
+        .to.emit(MyTokenC, "Approval")
+        .withArgs(signer1.address, hre.ethers.parseUnits("10", decimals));
+
+      await expect(
+        MyTokenC.connect(signer1).transferFrom(
+          signer0.address,
+          signer1.address,
+          hre.ethers.parseUnits("0.3", decimals)
+        )
+      )
+        .to.emit(MyTokenC, "Transfer")
+        .withArgs(
+          signer0.address,
+          signer1.address,
+          hre.ethers.parseUnits("0.3", decimals)
+        );
+    });
+  });
 });
