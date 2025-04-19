@@ -125,6 +125,12 @@ describe("mytoken deploy", () => {
           signer1.address,
           hre.ethers.parseUnits("0.3", decimals)
         );
+    
+
+        expect(await MyTokenC.balanceOf(signer1)).equal(
+          hre.ethers.parseUnits("0.3", decimals) 
+        );
+
     });
   });
 });
