@@ -3,8 +3,8 @@ import { expect, should } from "chai";
 import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
-const mintingAmount = 100n;
-const decimals = 18n;
+const MINTING_AMOUNT = 100n;
+const DECIMALS = 18n;
 
 describe("mytoken deploy", () => {
   let MyTokenC: MyToken;
@@ -28,13 +28,13 @@ describe("mytoken deploy", () => {
       expect(await MyTokenC.symbol()).equal("MT");
     });
 
-    it("should return decimals", async () => {
-      expect(await MyTokenC.decimals()).equal(decimals);
+    it("should return DECIMALS", async () => {
+      expect(await MyTokenC.decimals()).equal(DECIMALS);
     });
 
     it("should return 0 totalSupply", async () => {
       expect(await MyTokenC.totalSupply()).equal(
-        mintingAmount * 10n ** decimals
+        MINTING_AMOUNT * 10n ** DECIMALS
       );
     });
   });
@@ -54,7 +54,7 @@ describe("mytoken deploy", () => {
       const signer1 = signers[1];
       await expect(
         MyTokenC.transfer(
-          hre.ethers.parseUnits("0.5", decimals),
+          hre.ethers.parseUnits("0.5", DECIMALS),
           signer1.address
         )
       )
@@ -62,10 +62,10 @@ describe("mytoken deploy", () => {
         .withArgs(
           signer0.address,
           signer1.address,
-          hre.ethers.parseUnits("0.5", decimals)
+          hre.ethers.parseUnits("0.5", DECIMALS)
         );
       expect(await MyTokenC.balanceOf(signer1.address)).equal(
-        hre.ethers.parseUnits("0.5", decimals)
+        hre.ethers.parseUnits("0.5", DECIMALS)
       );
     });
 
@@ -73,7 +73,7 @@ describe("mytoken deploy", () => {
       const signer1 = signers[1];
       await expect(
         MyTokenC.transfer(
-          hre.ethers.parseUnits((mintingAmount + 1n).toString(), decimals),
+          hre.ethers.parseUnits((MINTING_AMOUNT + 1n).toString(), DECIMALS),
           signer1.address
         )
       ).to.be.revertedWith("insufficient balance");
@@ -84,10 +84,10 @@ describe("mytoken deploy", () => {
     it("should emit Approval event", async () => {
       const signer1 = signers[1];
       await expect(
-        MyTokenC.approve(signer1.address, hre.ethers.parseUnits("10", decimals))
+        MyTokenC.approve(signer1.address, hre.ethers.parseUnits("10", DECIMALS))
       )
         .to.emit(MyTokenC, "Approval")
-        .withArgs(signer1.address, hre.ethers.parseUnits("10", decimals));
+        .withArgs(signer1.address, hre.ethers.parseUnits("10", DECIMALS));
     });
     it("should be reverted with insufficient allowance error", async () => {
       const signer0 = signers[0];
@@ -96,7 +96,7 @@ describe("mytoken deploy", () => {
         MyTokenC.connect(signer1).transferFrom(
           signer0.address,
           signer1.address,
-          hre.ethers.parseUnits("1", decimals)
+          hre.ethers.parseUnits("1", DECIMALS)
         )
       ).to.be.reverted("insufficient allowance");
     });
@@ -107,28 +107,27 @@ describe("mytoken deploy", () => {
       const signer0 = signers[0];
       const signer1 = signers[1];
       await expect(
-        MyTokenC.approve(signer1.address, hre.ethers.parseUnits("10", decimals))
+        MyTokenC.approve(signer1.address, hre.ethers.parseUnits("10", DECIMALS))
       )
         .to.emit(MyTokenC, "Approval")
-        .withArgs(signer1.address, hre.ethers.parseUnits("10", decimals));
+        .withArgs(signer1.address, hre.ethers.parseUnits("10", DECIMALS));
 
       await expect(
         MyTokenC.connect(signer1).transferFrom(
           signer0.address,
           signer1.address,
-          hre.ethers.parseUnits("0.3", decimals)
+          hre.ethers.parseUnits("0.3", DECIMALS)
         )
       )
         .to.emit(MyTokenC, "Transfer")
         .withArgs(
           signer0.address,
           signer1.address,
-          hre.ethers.parseUnits("0.3", decimals)
+          hre.ethers.parseUnits("0.3", DECIMALS)
         );
-    
 
         expect(await MyTokenC.balanceOf(signer1)).equal(
-          hre.ethers.parseUnits("0.3", decimals) 
+          hre.ethers.parseUnits("0.3", DECIMALS) 
         );
 
     });
