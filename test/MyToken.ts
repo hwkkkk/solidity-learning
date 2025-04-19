@@ -2,9 +2,9 @@ import hre from "hardhat";
 import { expect, should } from "chai";
 import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import {DECIMALS ,MINTING_AMOUNT} from "./constant"
+import "@nomicfoundation/hardhat-chai-matchers"; // 이거 추가하면 reverted 작동함
 
-const MINTING_AMOUNT = 100n;
-const DECIMALS = 18n;
 
 describe("mytoken deploy", () => {
   let MyTokenC: MyToken;
@@ -79,7 +79,7 @@ describe("mytoken deploy", () => {
       ).to.be.revertedWith("insufficient balance");
     });
   });
-
+  
   describe("TransferForm", () => {
     it("should emit Approval event", async () => {
       const signer1 = signers[1];
@@ -89,6 +89,7 @@ describe("mytoken deploy", () => {
         .to.emit(MyTokenC, "Approval")
         .withArgs(signer1.address, hre.ethers.parseUnits("10", DECIMALS));
     });
+    
     it("should be reverted with insufficient allowance error", async () => {
       const signer0 = signers[0];
       const signer1 = signers[1];
@@ -98,7 +99,7 @@ describe("mytoken deploy", () => {
           signer1.address,
           hre.ethers.parseUnits("1", DECIMALS)
         )
-      ).to.be.reverted("insufficient allowance");
+      ).to.be.revertedWith("insufficient allowance");
     });
   });
 
