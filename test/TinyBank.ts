@@ -21,6 +21,8 @@ describe("TinyBank", () => {
     tinyBankC = await hre.ethers.deployContract("TinyBank", [
       await MyTokenC.getAddress(),
     ]);
+
+    await MyTokenC.setManager(tinyBankC.getAddress());
   });
 
   describe("Initialized state check", () => {
@@ -61,24 +63,34 @@ describe("TinyBank", () => {
 
   describe("reward", () => {
     it("should reward 1MT every blocks", async () => {
-        const signer0 = signers[0]
-        const stakingamount = hre.ethers.parseUnits("50", DECIMALS);
-        await MyTokenC.approve(await tinyBankC.getAddress(), stakingamount );
-        await tinyBankC.stake(stakingamount);
-        
-        const BLOCKS = 5n;
-        const transferAmount = hre.ethers.parseUnits("1", DECIMALS);
-        for(var i=0; i<5; i++) {
-          await MyTokenC.transfer(transferAmount, signer0.address);
-        }
-        
-        await tinyBankC.withdraw(stakingamount);
-        console.log(await MyTokenC.balanceOf(signer0.address));
-        expect(await MyTokenC.balanceOf(signer0.address)).equal(
-            hre.ethers.parseUnits((BLOCKS+MINTING_AMOUNT+1n).toString())
-        );
+      const signer0 = signers[0];
+      const stakingamount = hre.ethers.parseUnits("50", DECIMALS);
+      await MyTokenC.approve(await tinyBankC.getAddress(), stakingamount);
+      await tinyBankC.stake(stakingamount);
+
+      const BLOCKS = 5n;
+      const transferAmount = hre.ethers.parseUnits("1", DECIMALS);
+      for (var i = 0; i < 5; i++) {
+        await MyTokenC.transfer(transferAmount, signer0.address);
+      }
+
+      await tinyBankC.withdraw(stakingamount);
+      console.log(await MyTokenC.balanceOf(signer0.address));
+      expect(await MyTokenC.balanceOf(signer0.address)).equal(
+        hre.ethers.parseUnits((BLOCKS + MINTING_AMOUNT + 1n).toString())
+      );
+    });
+
+    it("should revert when changing rewardPerBlock by hacker", async () => {
+      const hack = signers[3];
+      const rewardToChange = hre.ethers.parseUnits("10000", DECIMALS);
+
+      await expect(
+        tinyBankC.connect(hack).setRewardPerBlock(rewardToChange)
+      ).to.be.revertedWith("you are not authorized to manage this constract");
+
+     
+
     });
   });
-
-
 });

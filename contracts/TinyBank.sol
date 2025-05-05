@@ -20,6 +20,7 @@
 
 
 pragma solidity ^0.8.28;
+import "./ManagedAccess.sol";
 
 interface IMyToken {
     function transfer(uint256 amount, address to) external;
@@ -27,21 +28,23 @@ interface IMyToken {
     function mint(uint256 amount, address owner) external;
 }
 
-contract TinyBank{
+contract TinyBank is ManagedAccess {
     event Staked(address, uint256);
     event Withdraw(uint256 amout, address to);
 
     IMyToken public stakingToken;
 
     mapping(address => uint256) public lastClaimedBlock;
-    
+
+    uint256 defaultRewardBlock = 1*10*18;
     uint256 rewardPerBlock = 1*10**18;
 
     mapping (address => uint256) public staked;
     uint256 public totalstaked;
     
-    constructor(IMyToken _stakingToken) {
+    constructor(IMyToken _stakingToken) ManagedAccess(msg.sender, msg.sender) {
         stakingToken = _stakingToken;
+        rewardPerBlock = defaultRewardBlock;
     }
     
     
@@ -55,6 +58,10 @@ contract TinyBank{
         }
         lastClaimedBlock[to] = block.number;
         _;  // caller's code fisrt ur next caller function
+    }
+
+    function setRewardPerBlock(uint256 _amount) external onlyManager {
+        rewardPerBlock = _amount;
     }
 
     function stake(uint256 _amount) external updateReward(msg.sender) {

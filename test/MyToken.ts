@@ -1,6 +1,6 @@
 import hre from "hardhat";
 import { expect, should } from "chai";
-import { MyToken } from "../typechain-types";
+import { MyToken, TinyBank } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import {DECIMALS ,MINTING_AMOUNT} from "./constant"
 import "@nomicfoundation/hardhat-chai-matchers"; // 이거 추가하면 reverted 작동함
@@ -9,6 +9,7 @@ import "@nomicfoundation/hardhat-chai-matchers"; // 이거 추가하면 reverted
 describe("mytoken deploy", () => {
   let MyTokenC: MyToken;
   let signers: HardhatEthersSigner[];
+  let tinyBankC: TinyBank;
   beforeEach("should deploy", async () => {
     signers = await hre.ethers.getSigners();
     MyTokenC = await hre.ethers.deployContract("MyToken", [
@@ -17,6 +18,10 @@ describe("mytoken deploy", () => {
       18,
       100,
     ]);
+    tinyBankC = await hre.ethers.deployContract("TinyBank", [
+      await MyTokenC.getAddress(),
+    ]);
+    await MyTokenC.setManager(tinyBankC.getAddress())
   });
 
   describe("Basic state value check", () => {
@@ -46,6 +51,15 @@ describe("mytoken deploy", () => {
         100n * 10n ** 18n
       );
     });
+
+    // Tdd : test driven develoment
+    it("should return or revert when minting infinitely", async () =>{
+      const hack = signers[2];
+      const mintingAgainAmount = hre.ethers.parseUnits("10000", DECIMALS);
+      await expect(MyTokenC.connect(hack).mint(mintingAgainAmount, hack.address)
+      ).to.be.revertedWith("you are not authorized to manage this constract");
+      
+    })
   });
 
   describe("Transfer", () => {
