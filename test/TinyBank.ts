@@ -4,6 +4,7 @@ import { DECIMALS, MINTING_AMOUNT } from "./constant";
 import { MyToken, TinyBank } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { sign } from "crypto";
+import { ManagedAccess__factory } from "../typechain-types/factories/MangedAccess.sol";
 
 describe("TinyBank", () => {
   let MyTokenC: MyToken;
@@ -12,6 +13,9 @@ describe("TinyBank", () => {
 
   beforeEach(async () => {
     signers = await hre.ethers.getSigners();
+    //manager 3명 초기화
+    const managers = [signers[1].address, signers[2].address, signers[3].address];
+
     MyTokenC = await hre.ethers.deployContract("MyToken", [
       "MyToken",
       "MT",
@@ -19,10 +23,12 @@ describe("TinyBank", () => {
       MINTING_AMOUNT,
     ]);
     tinyBankC = await hre.ethers.deployContract("TinyBank", [
-      await MyTokenC.getAddress(),
+      await MyTokenC.getAddress(), managers,
     ]);
-
     await MyTokenC.setManager(tinyBankC.getAddress());
+
+
+
   });
 
   describe("Initialized state check", () => {
@@ -75,7 +81,7 @@ describe("TinyBank", () => {
       }
 
       await tinyBankC.withdraw(stakingamount);
-      console.log(await MyTokenC.balanceOf(signer0.address));
+      
       expect(await MyTokenC.balanceOf(signer0.address)).equal(
         hre.ethers.parseUnits((BLOCKS + MINTING_AMOUNT + 1n).toString())
       );
@@ -87,10 +93,34 @@ describe("TinyBank", () => {
 
       await expect(
         tinyBankC.connect(hack).setRewardPerBlock(rewardToChange)
-      ).to.be.revertedWith("you are not authorized to manage this constract");
+      ).to.be.revertedWith("you are not authorized to manage this contract");
 
      
 
     });
+  });
+
+
+  describe("multimanged access test", () => {
+    it("manager address test", async () => {
+      const signer0 = signers[0];
+      const stakingamount = hre.ethers.parseUnits("50", DECIMALS);
+      await MyTokenC.approve(await tinyBankC.getAddress(), stakingamount);
+      await tinyBankC.stake(stakingamount);
+
+      const BLOCKS = 5n;
+      const transferAmount = hre.ethers.parseUnits("1", DECIMALS);
+      for (var i = 0; i < 5; i++) {
+        await MyTokenC.transfer(transferAmount, signer0.address);
+      }
+
+      await tinyBankC.withdraw(stakingamount);
+      
+      expect(await MyTokenC.balanceOf(signer0.address)).equal(
+        hre.ethers.parseUnits((BLOCKS + MINTING_AMOUNT + 1n).toString())
+      );
+    });
+
+   
   });
 });
