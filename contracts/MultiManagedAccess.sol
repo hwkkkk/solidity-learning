@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 contract MultiManagedAccess {
-    // manger 3 변경
+    // manger 3 변경했습니다
     uint constant MANAGER_NUMBERS = 3;
     uint immutable BACKUP_MANAGER_NUMBERS;
 
