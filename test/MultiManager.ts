@@ -51,6 +51,9 @@ describe("TinyBank", () => {
           it("should confirm all manager", async () => {
             const access = tinyBankC as any;
             const hack = signers[0];
+            const stakingamount = hre.ethers.parseUnits("50", DECIMALS);
+            await MyTokenC.approve(await tinyBankC.getAddress(), stakingamount);
+            await tinyBankC.stake(stakingamount);
             const rewardToChange = hre.ethers.parseUnits("10", DECIMALS);
       
             await expect(

@@ -47,6 +47,7 @@ contract TinyBank is MultiManagedAccess {
     
 
     //MultiManagedAccess import construtor 초기화
+    //상속해서 하는데 typescript 상속은 인식을 안하다는데 이해가 안됩니다
     constructor(IMyToken _stakingToken ,address[3] memory _managers) MultiManagedAccess(msg.sender, _managers, 3) {
         stakingToken = _stakingToken;
         rewardPerBlock = defaultRewardBlock;
@@ -65,6 +66,7 @@ contract TinyBank is MultiManagedAccess {
         _;  // caller's code fisrt ur next caller function
     }
 
+    //allConfirmed변경
     function setRewardPerBlock(uint256 _amount) external onlyAllConfirmed {
         rewardPerBlock = _amount;
     }
